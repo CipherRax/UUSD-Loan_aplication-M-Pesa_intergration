@@ -84,7 +84,7 @@ app.post('/ussd', async (req, res) => {
         else {
             response = `END Invalid options !`
         }
-    } else if (testArray[0] === '1' && testArray.length === 5) {
+    } else if (testArray[0] === '1'){
         const choice = testArray[3]
 
         //=======
@@ -102,7 +102,7 @@ app.post('/ussd', async (req, res) => {
 
             } else if (testArray.length === 6) {
                 if (testArray[5] === '1') {
-                    response = `CON Enter Phone number to get the loan to`
+                    response = `CON Enter Phone number for loan payment`
                 } else {
                     response = `END You have canceled the request`
                 }
@@ -152,7 +152,7 @@ app.post('/ussd', async (req, res) => {
         }
     }
     //===========LOGIC FLOW OPTION 2===============
-    else if (text == '2') {
+    else if (text === '2') {
 
         response = `CON Enter ID number for registration`;
     } else if (testArray[0] === '2' && testArray.length === 2) {
