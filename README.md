@@ -26,3 +26,32 @@ A professional **Node.js** backend that bridges **USSD menus** with **Safaricom 
    ```bash
    git clone https://github.com
    cd fintech-ussd-mpesa
+   ```
+**Database setup**
+   ```bash
+   -- Users Table
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  id_number TEXT UNIQUE,
+  password TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Loans Table
+CREATE TABLE users_loan_data (
+  id SERIAL PRIMARY KEY,
+  id_number TEXT,
+  phone_no TEXT,
+  loaned_amount INT,
+  status TEXT DEFAULT 'pending',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+```
+ **Configure Environment Variables**
+   ```bash
+      PORT=3000
+      VITE_SUPABASE_URL=your_supabase_url
+      VITE_ANON_KEY=your_supabase_anon_key
+      SAFARICOM_CONSUMER_KEY=your_daraja_consumer_key
+      SAFARICOM_CONSUMER_SECRET=your_daraja_consumer_secret
+
