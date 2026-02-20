@@ -3,6 +3,8 @@ require('dotenv').config({
 })
 const express = require('express');
 const {createClient} = require("@supabase/supabase-js");
+const {request} = require("express");
+const axios = require('axios');
 // const bodyParser = require('body-parser');
 
 const app = express();
@@ -18,9 +20,64 @@ const supabase = createClient(
 )
 
 
+
+// Function to get Access Token for Daraja.API
+const getAccessToken = async () => {
+    const consumerKey = process.env.SAFARICOM_CONSUMER_KEY;
+    const consumerSecret = process.env.SAFARICOM_CONSUMER_SECRET;
+    const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
+
+    try {
+        const res = await axios.get('https://sandbox.safaricom.co.ke', {
+            headers: { Authorization: `Basic ${auth}` }
+        });
+        return res.data.access_token;
+    } catch (err) {
+        console.error("Token Error:", err.response.data);
+    }
+};
+
+
+// Function to trigger B2C
+const initiateB2C = async (phoneNumber, amount) => {
+    const token = await getAccessToken();
+    const url = "https://sandbox.safaricom.co.ke";
+
+    const body = {
+        "OriginatorConversationID": Math.random().toString(36).substring(7),
+        "InitiatorName": "testapi", // Sandbox default
+        "SecurityCredential": "ZDqz9gTEPrJHcPN+lPMJfMJlk/sjDptsp4+PNsveJ7Hi5Qu9hlqChrelChkAfRqRzNM+Dwc2uvPclCIvokHVMImU1PPTLwxdPvZRhUa7FfbzhoKEIxHCW0o/RLCzyjgp5zLch4sIS2uJNAAg9G/JxfxOgPrLHlM7+LaVemcgaiY5MhjawB7gkLpAxiCNwTVl5KeZqoihMz2OFnf5+kR2l3DGAseVvNwgXVacp25wI53wGN4OGhH7tYTijQSf1flW7RooD22Md1dwiLQQF3BhIgl3kGVjdlAzIBwPJykGj0gwaixLdRKjx5iHpCToRdrKEdsvmp0rD0jTZvvxYhmVjA==", // Get from Daraja Portal
+        "CommandID": "BusinessPayment",
+        "Amount": amount,
+        "PartyA": "600986", // Sandbox Shortcode
+        "PartyB": phoneNumber,
+        "Remarks": "Loan Disbursement",
+        "QueueTimeOutURL": "https://presutural-brecken-mandibular.ngrok-free.dev",
+        "ResultURL": "https://presutural-brecken-mandibular.ngrok-free.dev",
+        "Occasion": ""
+    };
+
+    try {
+        const response = await axios.post(url, body, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return response.data;
+    } catch (error) {
+        console.error("B2C Error:", error.response.data);
+    }
+};
+
+
 app.get('/api/test', (req, res) => {
     res.send('test this endpoint!! Nice it works');
 })
+
+app.post('/api/b2c-callback', async (req, res) => {
+    console.log('---B2C Callback Received-----');
+    console.log(JSON.stringify(req.body, null, 2));
+    res.status(200).send('OK');
+})
+
 
 app.post('/ussd', async (req, res) => {
     // Read the variables sent via POST from our API
@@ -119,6 +176,8 @@ app.post('/ussd', async (req, res) => {
                     }])
 
                 response = error ? `END ERROR: ${error.message}` : `END Application Successful! You will receive a verification for M-Pesa`;
+                //Trigger M-Pesa B2C
+                await initiateB2C(phoneNumber, amount)
             }
         }
         //==============
