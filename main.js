@@ -238,4 +238,7 @@ app.post('/ussd', async (req, res) => {
     res.send(response);
 });
 
-app.listen(3000, ()=> console.log("Server started on port 3000 "));
+app.listen(3000, ()=> {
+    console.log("Server started on port 3000 ")
+    console.log("Start debug at http://localhost:3000");
+});
